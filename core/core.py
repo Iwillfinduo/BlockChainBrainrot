@@ -2,6 +2,8 @@ import hashlib
 import time
 import json
 
+from core.utills import create_genesis_block
+
 
 class Transaction:
     """
@@ -24,6 +26,20 @@ class Transaction:
             "timestamp": self.timestamp
         }
 
+    def to_json(self) -> str:
+        """Сериализует транзакцию в JSON строку."""
+        return json.dumps(self.to_dict(), indent=4)
+
+    @classmethod
+    def from_json(cls, json_str: str):
+        """Десериализует транзакцию из JSON строки."""
+        data = json.loads(json_str)
+        return cls(
+            sender=data["sender"],
+            receiver=data["receiver"],
+            amount=data["amount"],
+            timestamp=data["timestamp"]
+        )
     def calculate_hash(self) -> str:
         """Возвращает хэш SHA-256 от данных транзакции."""
         tx_string = json.dumps(self.to_dict(), sort_keys=True)
@@ -49,6 +65,31 @@ class BlockHeader:
         header_string = f"{self.previous_hash}{self.merkle_root}{self.timestamp}{self.nonce}{self.difficulty}"
         return hashlib.sha256(header_string.encode()).hexdigest()
 
+    def to_dict(self) -> dict:
+        """Возвращает заголовок блока в виде словаря для сериализации."""
+        return {
+            "previous_hash": self.previous_hash,
+            "merkle_root": self.merkle_root,
+            "timestamp": self.timestamp,
+            "nonce": self.nonce,
+            "difficulty": self.difficulty
+        }
+
+    def to_json(self) -> str:
+        """Сериализует заголовок блока в JSON строку."""
+        return json.dumps(self.to_dict(), indent=4)
+
+    @classmethod
+    def from_json(cls, json_str: str):
+        """Десериализует заголовок блока из JSON строки."""
+        data = json.loads(json_str)
+        return cls(
+            previous_hash=data["previous_hash"],
+            merkle_root=data["merkle_root"],
+            timestamp=data["timestamp"],
+            nonce=data["nonce"],
+            difficulty=data["difficulty"]
+        )
 
 class Block:
     """
@@ -98,3 +139,72 @@ class Block:
         """
         return (self.hash == self.header.calculate_hash() and
                 self.hash.startswith("0" * self.header.difficulty))
+
+    def to_dict(self) -> dict:
+        """Возвращает блок в виде словаря для сериализации."""
+        return {
+            "index": self.index,
+            "hash": self.hash,
+            "merkle_root": self.merkle_root,
+            "header": self.header.to_dict(),
+            "transactions": [tx.to_dict() for tx in self.transactions]
+        }
+
+    def to_json(self) -> str:
+        """Сериализует блок в JSON строку."""
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, json_str: str):
+        """Десериализует блок из JSON строки."""
+        data = json.loads(json_str)
+
+        # Десериализуем транзакции
+        transactions = [Transaction.from_json(json.dumps(tx)) for tx in data["transactions"]]
+
+        # Создаем блок
+        block = cls(
+            index=data["index"],
+            transactions=transactions,
+            previous_hash=data["header"]["previous_hash"],
+            difficulty=data["header"]["difficulty"]
+        )
+
+        # Восстанавливаем остальные поля
+        block.merkle_root = data["merkle_root"]
+        block.header.timestamp = data["header"]["timestamp"]
+        block.header.nonce = data["header"]["nonce"]
+        block.hash = data["hash"]
+
+        return block
+
+
+
+    class Blockchain:
+        def __init__(self, dao):
+            self.chain = []
+            self.current_transactions = []
+            self.dao = dao
+
+            self.new_block(create_genesis_block())
+
+        def new_block(self, block):
+            # Создает новый блок и вносит его в цепь
+            self.current_transactions = []
+            self.dao.add_block(block.to_orm(), [transaction.to_orm() for transaction in block.transactions])
+            self.chain.append(block)
+            return block
+
+        def new_transaction(self, transaction: Transaction):
+            # Вносит новую транзакцию в список транзакций
+            self.current_transactions.append(transaction)
+            return self.last_block.index + 1
+
+        @property
+        def last_block(self):
+            # Возвращает последний блок в цепочке
+            return self.chain[-1]
+
+
+
+
