@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, create_engine, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -41,3 +41,25 @@ class TransactionDB(Base):
 
     # Связь с блоком
     block = relationship("BlockDB", back_populates="transactions")
+
+
+class UserDB(Base):
+    """Модель для хранения пользователей и их кошельков"""
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+
+    # Аутентификационные данные
+    username = Column(String(50), nullable=False, unique=True, index=True)
+    # Используйте LargeBinary для хранения хэша пароля (например, bcrypt)
+    hashed_password = Column(LargeBinary, nullable=False)
+
+    # Данные кошелька
+    # Предполагается одна валюта, один адрес
+    wallet_address = Column(String(255), nullable=False, unique=True, index=True)
+
+    # Добавление баланса (для быстрого чтения, хотя истинный баланс вычисляется по цепи)
+    balance = Column(Float, default=0.0)
+
+    def __repr__(self):
+        return f"UserDB(id={self.id}, username='{self.username}', wallet_address='{self.wallet_address}')"

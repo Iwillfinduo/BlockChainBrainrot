@@ -4,8 +4,11 @@ from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional, Dict, Any
 
-from  db.model import Base, BlockDB, TransactionDB
-from core.core import Block, Transaction, BlockHeader
+from db.model import Base, BlockDB, TransactionDB, UserDB
+from core.node_core import Block, Transaction, BlockHeader
+from bcrypt import hashpw, gensalt
+
+from db.utils import verify_password
 
 
 class BlockchainStorage:
@@ -14,7 +17,7 @@ class BlockchainStorage:
     """
 
     def __init__(self, db_url: str = "sqlite:///blockchain.db"):
-        self.engine = create_engine(db_url, connect_args={"check_same_thread": False})
+        self.engine = create_engine(db_url, echo=True, connect_args={"check_same_thread": False})
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
@@ -282,3 +285,73 @@ class BlockchainStorage:
     def close(self):
         """Закрывает соединение"""
         self.session.close()
+
+    def create_user(self, username: str, password: str, wallet_address: str) -> Optional[UserDB]:
+        """Создает нового пользователя"""
+        try:
+            fake_hashed_pass = password.encode('utf-8')
+
+            user_db = UserDB(
+                username=username,
+                hashed_password=fake_hashed_pass,
+                wallet_address=wallet_address,
+                balance=0.0  # Начальный баланс
+            )
+            self.session.add(user_db)
+            self.session.commit()
+            self.session.refresh(user_db)
+            return user_db
+        except IntegrityError:
+            self.session.rollback()
+            # Пользователь или кошелек уже существуют
+            return None
+
+    def get_user_by_username(self, username: str) -> Optional[UserDB]:
+        """Находит пользователя по имени"""
+        return self.session.query(UserDB).filter(UserDB.username == username).first()
+
+    def get_user_by_wallet_address(self, address: str) -> Optional[UserDB]:
+        """Находит пользователя по адресу кошелька"""
+        return self.session.query(UserDB).filter(UserDB.wallet_address == address).first()
+
+    def update_user_balance(self, user_id: int, new_balance: float) -> bool:
+        """Обновляет баланс пользователя"""
+        user = self.session.query(UserDB).filter(UserDB.id == user_id).first()
+        if user:
+            user.balance = new_balance
+            self.session.commit()
+            return True
+        return False
+
+    def authenticate_user(self, username: str, password: str) -> Optional[UserDB]:
+        """
+        Проверяет учетные данные пользователя.
+
+        Args:
+            username: Имя пользователя, введенное при входе.
+            password: Чистый пароль, введенный при входе.
+
+        Returns:
+            Объект UserDB, если вход успешен, иначе None.
+        """
+
+        user = self.get_user_by_username(username)
+
+        if not user:
+            return None
+
+        try:
+            is_correct = verify_password(
+                password=password,
+                hashed_password=user.hashed_password
+            )
+        except ValueError:
+            print(f"ERROR: Invalid hash format for user {username}")
+            return None
+
+        if is_correct:
+            return user
+        else:
+            return None
+
+
