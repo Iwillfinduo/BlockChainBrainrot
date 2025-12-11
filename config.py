@@ -32,7 +32,7 @@ class Settings(BaseSettings):
         description="Ключ для подписи JWT, сессий или cookie",
     )
 
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 5
 
     DB_DIALECT: str = "sqlite"
     DB_FILE_NAME: str = Field(

@@ -1,4 +1,4 @@
-from core.core import Transaction, Block
+from core.node_core import Transaction, Block
 
 
 def create_genesis_block():

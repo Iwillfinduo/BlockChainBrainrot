@@ -56,10 +56,9 @@ class UserDB(Base):
 
     # Данные кошелька
     # Предполагается одна валюта, один адрес
-    wallet_address = Column(String(255), nullable=False, unique=True, index=True)
 
     # Добавление баланса (для быстрого чтения, хотя истинный баланс вычисляется по цепи)
     balance = Column(Float, default=0.0)
 
     def __repr__(self):
-        return f"UserDB(id={self.id}, username='{self.username}', wallet_address='{self.wallet_address}')"
+        return f"UserDB(id={self.id}, username='{self.username}')"

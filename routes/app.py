@@ -14,12 +14,12 @@ from routes.user_handling import user_router
 async def lifespan(app: FastAPI):
     print(f"Запуск приложения: {settings.APP_NAME}")
     print(f"Подключение к БД по URL: {settings.DATABASE_URL}")
-
+    #app.
     print(settings.model_config.get('env_file'))
     yield
 
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="routes/static"), name="static")
-app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY, max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
 app.include_router(user_router)

@@ -6,9 +6,8 @@ from typing import List, Optional, Dict, Any
 
 from db.model import Base, BlockDB, TransactionDB, UserDB
 from core.node_core import Block, Transaction, BlockHeader
-from bcrypt import hashpw, gensalt
 
-from db.utils import verify_password
+from db.utils import verify_password, hash_password
 
 
 class BlockchainStorage:
@@ -286,22 +285,22 @@ class BlockchainStorage:
         """Закрывает соединение"""
         self.session.close()
 
-    def create_user(self, username: str, password: str, wallet_address: str) -> Optional[UserDB]:
+    def create_user(self, username: str, password: str) -> Optional[UserDB]:
         """Создает нового пользователя"""
         try:
-            fake_hashed_pass = password.encode('utf-8')
+            hashed_password = hash_password(password)
 
             user_db = UserDB(
                 username=username,
-                hashed_password=fake_hashed_pass,
-                wallet_address=wallet_address,
+                hashed_password=hashed_password,
                 balance=0.0  # Начальный баланс
             )
             self.session.add(user_db)
             self.session.commit()
             self.session.refresh(user_db)
             return user_db
-        except IntegrityError:
+        except IntegrityError as e:
+            print(e)
             self.session.rollback()
             # Пользователь или кошелек уже существуют
             return None
@@ -309,10 +308,6 @@ class BlockchainStorage:
     def get_user_by_username(self, username: str) -> Optional[UserDB]:
         """Находит пользователя по имени"""
         return self.session.query(UserDB).filter(UserDB.username == username).first()
-
-    def get_user_by_wallet_address(self, address: str) -> Optional[UserDB]:
-        """Находит пользователя по адресу кошелька"""
-        return self.session.query(UserDB).filter(UserDB.wallet_address == address).first()
 
     def update_user_balance(self, user_id: int, new_balance: float) -> bool:
         """Обновляет баланс пользователя"""

@@ -1,51 +1,77 @@
+/* ==================================== */
+/* 🌙 ПЕРЕМЕННЫЕ И СТИЛИ ДЛЯ ТЕМНОЙ ТЕМЫ */
+/* ==================================== */
 :root {
-    --primary-color: #007bff;
-    --danger-color: #dc3545;
-    --bg-color: #f0f2f5;
-    --card-bg: #ffffff;
-    --border-color: #ced4da;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* Основные цвета темной темы (Material Design Dark) */
+    --background-color: #121212; /* Общий фон */
+    --surface-color: #1E1E1E;    /* Фон для карточек/контейнеров */
+    --text-color: #E0E0E0;       /* Основной текст */
+    --text-muted: #A0A0A0;       /* Текст меток/вспомогательный текст */
+
+    --primary-color: #BB86FC;    /* Акцентный цвет (Фиолетовый/Пурпурный) */
+    --primary-hover: #A370F2;    /* Акцент при наведении */
+    --danger-color: #CF6679;     /* Цвет ошибок (Dark Theme Red) */
+    --success-color: #03DAC6;    /* Цвет успеха (Dark Theme Teal) */
+
+    --border-color: #3C3C3C;     /* Цвет границ и разделителей */
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Более заметная тень */
+
+    /* Старые переменные, которые будут переопределены новыми */
+    --bg-color: var(--background-color);
+    --card-bg: var(--surface-color);
 }
+
+/* Общие стили для <body> */
 body {
     font-family: 'Arial', sans-serif;
     background-color: var(--bg-color);
+    color: var(--text-color); /* Устанавливаем светлый цвет текста по умолчанию */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
 }
+
+/* Контейнер входа */
 .login-container {
     width: 100%;
     max-width: 420px;
     padding: 40px;
     background-color: var(--card-bg);
-    border-radius: 10px;
+    border-radius: 12px; /* Чуть больший радиус */
     box-shadow: var(--shadow);
     transition: transform 0.3s ease-in-out;
 }
 .login-container:hover {
     transform: translateY(-2px);
 }
+
+/* Заголовок */
 h1 {
     text-align: center;
-    color: #333;
+    color: var(--text-color); /* Светлый цвет заголовка */
     margin-bottom: 30px;
     font-size: 1.8em;
 }
-.form-group {
-    margin-bottom: 25px;
-}
+
+/* Метки */
 label {
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #555;
+    color: var(--text-muted); /* Чуть более приглушенный цвет меток */
 }
+
+/* Поля ввода */
 input[type="text"],
 input[type="password"] {
     width: 100%;
     padding: 12px 15px;
+    /* Фон для полей */
+    background-color: var(--background-color); 
+    color: var(--text-color); /* Светлый текст внутри поля */
+    
     border: 1px solid var(--border-color);
     border-radius: 6px;
     box-sizing: border-box;
@@ -55,14 +81,19 @@ input[type="password"] {
 input[type="text"]:focus,
 input[type="password"]:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.25); /* Тень с акцентным цветом */
     outline: none;
 }
+input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: var(--danger-color);
+}
+
+/* Кнопка отправки */
 .btn-submit {
     width: 100%;
     padding: 12px;
     background-color: var(--primary-color);
-    color: white;
+    color: var(--background-color); /* Темный текст на акцентной кнопке */
     border: none;
     border-radius: 6px;
     font-size: 1.1em;
@@ -71,24 +102,46 @@ input[type="password"]:focus {
     transition: background-color 0.3s, opacity 0.3s;
 }
 .btn-submit:hover:not(:disabled) {
-    background-color: #0056b3;
+    background-color: var(--primary-hover);
 }
+
+/* Сообщение об ошибке от сервера */
 .error-message {
-    background-color: #f8d7da;
+    background-color: #3D2D35; /* Темный фон ошибки */
     color: var(--danger-color);
     padding: 15px;
     border-radius: 6px;
     margin-bottom: 25px;
     text-align: center;
-    border: 1px solid #f5c6cb;
+    border: 1px solid var(--danger-color);
     font-weight: 500;
 }
+
+/* Сообщение об успехе от сервера */
+.success-message {
+    background-color: #2D3D35; /* Темный фон успеха */
+    color: var(--success-color); 
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    text-align: center;
+    border: 1px solid var(--success-color);
+    font-weight: 500;
+}
+
 /* Стили для JS-валидации */
 .error-message-js {
     color: var(--danger-color);
     font-size: 0.9em;
     margin-top: 5px;
+}/* Стандартные стили, которые не нужно менять */
+/* input[type="text"]:focus, input[type="password"]:focus */
+/* ... */
+
+/* Очистка старых классов */
+.form-group {
+    margin-bottom: 25px;
 }
-input:invalid:not(:focus):not(:placeholder-shown) {
-    border-color: var(--danger-color);
-}
+/* Стандартные стили, которые не нужно менять */
+/* input[type="text"]:focus, input[type="password"]:focus */
+/* ... */

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Кошелек</title>
+    <style>
+        /* Общие стили для центрирования и фона */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f7f9;
+        }
+
+        /* Контейнер кошелька */
+        .wallet-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+
+        /* *** НОВЫЕ СТИЛИ ДЛЯ ИМЕНИ ПОЛЬЗОВАТЕЛЯ *** */
+        .user-greeting {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        /* Стили для заголовка */
+        h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Стили для эмблемы/картинки */
+        .wallet-image {
+            width: 100px; /* Размер изображения */
+            height: 100px;
+            margin-bottom: 20px;
+        }
+
+        /* Стили для баланса */
+        .balance-label {
+            color: #6c757d;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #28a745; /* Зеленый цвет для акцента */
+            margin-bottom: 30px;
+        }
+
+        /* Стили для кнопки */
+        .btn-transfer {
+            background-color: #007bff; /* Синий цвет */
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-transfer:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="wallet-container">
+        <p class="user-greeting">
+            Добро пожаловать, **{{ username }}**!
+        </p>
+
+        <h2>Мой Кошелек</h2>
+
+        <img
+            src="coin_icon.png"
+            alt="Иконка монеты"
+            class="wallet-image"
+        >
+
+        <div class="balance-area">
+            <p class="balance-label">Текущий баланс</p>
+            <p class="balance-amount">
+                **{{ balance_amount }}** <small style="font-size: 0.6em;">Монет</small>
+            </p>
+        </div>
+
+        <button class="btn-transfer">
+            Перевод / Отправить
+        </button>
+    </div>
+</body>
+</html>
