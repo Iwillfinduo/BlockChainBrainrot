@@ -36,7 +36,7 @@ class TransactionDB(Base):
 
     sender = Column(String(255), nullable=False, index=True)
     receiver = Column(String(255), nullable=False, index=True)
-    amount = Column(Float, nullable=False)
+    amount = Column(Integer, nullable=False)
     timestamp = Column(Float, nullable=False)
 
     # Связь с блоком

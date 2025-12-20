@@ -11,22 +11,18 @@
 
         /* Контейнер кошелька */
         .wallet-container {
-            /* Используем переменную surface-color для фона контейнера */
             background-color: var(--surface-color);
             padding: 40px;
             border-radius: 12px;
-            /* Используем переменную для тени */
             box-shadow: var(--shadow);
             text-align: center;
             width: 300px;
-            /* Добавляем цвет текста для контейнера */
             color: var(--text-color);
         }
 
-        /* *** НОВЫЕ СТИЛИ ДЛЯ ИМЕНИ ПОЛЬЗОВАТЕЛЯ *** */
+        /* *** СТИЛИ ДЛЯ ИМЕНИ ПОЛЬЗОВАТЕЛЯ *** */
         .user-greeting {
             font-size: 1.2em;
-            /* Используем основной цвет текста */
             color: var(--text-color);
             margin-bottom: 5px;
             font-weight: 500;
@@ -36,14 +32,12 @@
         h2 {
             margin-top: 0;
             margin-bottom: 25px;
-            /* Используем цвет границ для разделителя */
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
-            /* Используем основной цвет текста */
             color: var(--text-color);
         }
 
-        /* Стили для эмблемы/картинки (Здесь изменения не требуются, если это PNG/SVG) */
+        /* Стили для эмблемы/картинки */
         .wallet-image {
             width: 100%;
             height: 100%;
@@ -53,7 +47,6 @@
 
         /* Стили для баланса */
         .balance-label {
-            /* Используем приглушенный цвет текста */
             color: var(--text-muted);
             font-size: 1.1em;
             margin-bottom: 5px;
@@ -62,16 +55,13 @@
         .balance-amount {
             font-size: 2.5em;
             font-weight: bold;
-            /* Используем цвет успеха (success-color) для баланса */
             color: var(--success-color);
             margin-bottom: 30px;
         }
 
         /* Стили для кнопки */
         .btn-transfer {
-            /* Используем основной акцентный цвет */
             background-color: var(--primary-color);
-            /* Используем цвет фона для текста кнопки */
             color: var(--background-color);
             border: none;
             padding: 12px 25px;
@@ -81,6 +71,7 @@
             transition: background-color 0.3s ease;
             width: 100%;
         }
+
         .logo {
             position: absolute;
             top: 15px;
@@ -88,40 +79,256 @@
             height: 80px;
             width: auto;
             z-index: 10;
-
         }
-        .btn-transfer:hover {
-            /* Используем цвет при наведении */
+        .btn-logout {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            height: 40px;
+            z-index: 10;
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: auto;
+        }
+        .btn-logout:hover {
             background-color: var(--primary-hover);
         }
+        .btn-transfer:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* *** СТИЛИ МОДАЛЬНОГО ОКНА (НОВОЕ) *** */
+        .modal {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6); /* Затемнение фона */
+            backdrop-filter: blur(5px); /* Эффект размытия фона */
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            margin: 15vh auto; /* Отступ сверху */
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 350px; /* Ширина чуть больше карточки */
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: var(--text-color);
+            position: relative;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Кнопка закрытия (крестик) */
+        .close {
+            color: var(--text-muted);
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        /* Поля ввода в модальном окне */
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-size: 1em;
+            box-sizing: border-box; /* Чтобы padding не ломал ширину */
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Сообщение об ошибке */
+        .error-message {
+            color: #ff4d4d; /* Красный цвет ошибки */
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            display: none; /* Скрыто по умолчанию */
+        }
+
     </style>
 
 </head>
 <body>
-    <img src="{{ url_for('static', path='/img/logo.png') }}" alt="Эмблема" class="logo">
-    <div class="wallet-container">
-        <p class="user-greeting">
-            Добро пожаловать, {{ username }}!
-        </p>
+<img src="{{ url_for('static', path='/img/logo.png') }}" alt="Эмблема" class="logo">
+<button class="btn-logout" id="logoutBtn">Выйти из аккаунта</button>
+<div class="wallet-container">
+    <p class="user-greeting">
+        Добро пожаловать, {{ username }}!
+    </p>
 
-        <h2>Мой Кошелек</h2>
+    <h2>Мой Кошелек</h2>
 
-        <img
+    <img
             src="{{ url_for('static', path='/img/wallet.png') }}"
             alt="Иконка монеты"
             class="wallet-image"
-        >
+    >
 
-        <div class="balance-area">
-            <p class="balance-label">Текущий баланс</p>
-            <p class="balance-amount">
-                {{ balance_amount }} <small style="font-size: 0.6em;">Плюксиков</small>
-            </p>
-        </div>
-
-        <button class="btn-transfer">
-            Перевод
-        </button>
+    <div class="balance-area">
+        <p class="balance-label">Текущий баланс</p>
+        <p class="balance-amount" id="displayBalance">
+            {{ balance_amount }} <small style="font-size: 0.6em;">Плюксиков</small>
+        </p>
     </div>
+
+    <button class="btn-transfer" id="openTransferModal">
+        Перевод
+    </button>
+
+</div>
+
+<div id="transferModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Перевод средств</h2>
+
+        <form id="transferForm" action="/send_transaction" method="POST">
+
+            <div class="form-group">
+                <label for="recipient">Кому (Логин):</label>
+                <input type="text" id="recipient" name="recipient" class="form-control" placeholder="Введите логин"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Сумма:</label>
+                <input type="number" id="amount" name="amount" class="form-control" placeholder="0" min="1" required>
+            </div>
+
+            <p id="balanceError" class="error-message">Недостаточно средств на счете!</p>
+
+            <button type="submit" class="btn-transfer">
+                Отправить
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Получаем элементы
+    const modal = document.getElementById("transferModal");
+    const btn = document.getElementById("openTransferModal");
+    const span = document.getElementsByClassName("close")[0];
+    const form = document.getElementById("transferForm");
+    const amountInput = document.getElementById("amount");
+    const errorMsg = document.getElementById("balanceError");
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Получаем баланс из шаблона Jinja в JS переменную
+    // parseFloat нужен, если баланс может быть дробным, иначе parseInt
+    const currentBalance = parseInt("{{ balance_amount }}");
+
+    // Открытие модального окна
+    btn.onclick = function () {
+        modal.style.display = "block";
+        errorMsg.style.display = "none"; // Сброс ошибки при открытии
+        amountInput.value = ""; // Очистка поля суммы
+    }
+
+    // Закрытие по крестику
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // Закрытие по клику вне окна
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+    logoutBtn.onclick = async () => {
+            if (confirm("Вы уверены, что хотите выйти?")) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    if (response.ok) {
+                        // Перенаправляем на страницу логина после успешного выхода
+                        window.location.href = "/login";
+                    } else {
+                        alert("Ошибка при выходе из системы");
+                    }
+                } catch (err) {
+                    console.error("Logout error:", err);
+                }
+            }
+    };
+    // Логика проверки баланса при отправке
+    form.onsubmit = function (event) {
+        const enteredAmount = parseInt(amountInput.value);
+
+        if (isNaN(enteredAmount) || enteredAmount <= 0) {
+            event.preventDefault();
+            errorMsg.innerText = "Введите корректную сумму";
+            errorMsg.style.display = "block";
+            return;
+        }
+
+        if (enteredAmount > currentBalance) {
+            // Отменяем отправку формы
+            event.preventDefault();
+            // Показываем сообщение об ошибке
+            errorMsg.innerText = "Недостаточно средств на счете! Доступно: " + currentBalance;
+            errorMsg.style.display = "block";
+        } else {
+            // Если все ок, форма отправляется на сервер
+            errorMsg.style.display = "none";
+        }
+    }
+</script>
 </body>
 </html>

@@ -1,4 +1,7 @@
+import time
+
 from fastapi import Request, HTTPException, status
+from core.node_core import Transaction
 
 def require_auth(request: Request):
     user_id = request.session.get("user_id")
@@ -10,3 +13,9 @@ def require_auth(request: Request):
             headers={"Location": "/login"}
         )
     return user_id
+
+def create_transaction(sender, recipient, amount) -> Transaction:
+    transaction = Transaction(sender, recipient, amount, timestamp=time.time())
+    return transaction
+
+
