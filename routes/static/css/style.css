@@ -137,6 +137,14 @@ input:invalid:not(:focus):not(:placeholder-shown) {
 }/* Стандартные стили, которые не нужно менять */
 /* input[type="text"]:focus, input[type="password"]:focus */
 /* ... */
+.logo {
+            position: absolute;
+            top: 15px; /* Отступ сверху */
+            left: 15px; /* Отступ слева */
+            height: 80px; /* Задайте нужную высоту */
+            width: auto; /* Сохранение пропорций */
+            z-index: 10; /* Убедитесь, что логотип находится поверх других элементов */
+        }
 
 /* Очистка старых классов */
 .form-group {

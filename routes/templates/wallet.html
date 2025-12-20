@@ -4,32 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мой Кошелек</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
     <style>
-        /* Общие стили для центрирования и фона */
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f7f9;
-        }
+
+        /* *** ПЕРЕОПРЕДЕЛЕНИЕ СТИЛЕЙ ДЛЯ ТЕМНОЙ ТЕМЫ *** */
 
         /* Контейнер кошелька */
         .wallet-container {
-            background-color: #ffffff;
+            /* Используем переменную surface-color для фона контейнера */
+            background-color: var(--surface-color);
             padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            /* Используем переменную для тени */
+            box-shadow: var(--shadow);
             text-align: center;
             width: 300px;
+            /* Добавляем цвет текста для контейнера */
+            color: var(--text-color);
         }
 
         /* *** НОВЫЕ СТИЛИ ДЛЯ ИМЕНИ ПОЛЬЗОВАТЕЛЯ *** */
         .user-greeting {
             font-size: 1.2em;
-            color: #333;
+            /* Используем основной цвет текста */
+            color: var(--text-color);
             margin-bottom: 5px;
             font-weight: 500;
         }
@@ -38,20 +36,25 @@
         h2 {
             margin-top: 0;
             margin-bottom: 25px;
-            border-bottom: 2px solid #eee;
+            /* Используем цвет границ для разделителя */
+            border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
+            /* Используем основной цвет текста */
+            color: var(--text-color);
         }
 
-        /* Стили для эмблемы/картинки */
+        /* Стили для эмблемы/картинки (Здесь изменения не требуются, если это PNG/SVG) */
         .wallet-image {
-            width: 100px; /* Размер изображения */
-            height: 100px;
+            width: 100%;
+            height: 100%;
             margin-bottom: 20px;
+            filter: invert(100%);
         }
 
         /* Стили для баланса */
         .balance-label {
-            color: #6c757d;
+            /* Используем приглушенный цвет текста */
+            color: var(--text-muted);
             font-size: 1.1em;
             margin-bottom: 5px;
         }
@@ -59,14 +62,17 @@
         .balance-amount {
             font-size: 2.5em;
             font-weight: bold;
-            color: #28a745; /* Зеленый цвет для акцента */
+            /* Используем цвет успеха (success-color) для баланса */
+            color: var(--success-color);
             margin-bottom: 30px;
         }
 
         /* Стили для кнопки */
         .btn-transfer {
-            background-color: #007bff; /* Синий цвет */
-            color: white;
+            /* Используем основной акцентный цвет */
+            background-color: var(--primary-color);
+            /* Используем цвет фона для текста кнопки */
+            color: var(--background-color);
             border: none;
             padding: 12px 25px;
             font-size: 1.1em;
@@ -75,22 +81,33 @@
             transition: background-color 0.3s ease;
             width: 100%;
         }
+        .logo {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            height: 80px;
+            width: auto;
+            z-index: 10;
 
+        }
         .btn-transfer:hover {
-            background-color: #0056b3;
+            /* Используем цвет при наведении */
+            background-color: var(--primary-hover);
         }
     </style>
+
 </head>
 <body>
+    <img src="{{ url_for('static', path='/img/logo.png') }}" alt="Эмблема" class="logo">
     <div class="wallet-container">
         <p class="user-greeting">
-            Добро пожаловать, **{{ username }}**!
+            Добро пожаловать, {{ username }}!
         </p>
 
         <h2>Мой Кошелек</h2>
 
         <img
-            src="coin_icon.png"
+            src="{{ url_for('static', path='/img/wallet.png') }}"
             alt="Иконка монеты"
             class="wallet-image"
         >
@@ -98,12 +115,12 @@
         <div class="balance-area">
             <p class="balance-label">Текущий баланс</p>
             <p class="balance-amount">
-                **{{ balance_amount }}** <small style="font-size: 0.6em;">Монет</small>
+                {{ balance_amount }} <small style="font-size: 0.6em;">Плюксиков</small>
             </p>
         </div>
 
         <button class="btn-transfer">
-            Перевод / Отправить
+            Перевод
         </button>
     </div>
 </body>

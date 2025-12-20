@@ -31,7 +31,7 @@ async def profile(request: Request):
         RedirectResponse(url="/login")
     return templates.TemplateResponse(
         "wallet.html",
-        {'username': username, 'balance_amount': user.balance}
+        {'request': request, 'username': username, 'balance_amount': user.balance}
     )
 
 @user_router.get("/register")
@@ -53,7 +53,7 @@ async def register_post(
     """
     user = storage.create_user(username, password)
     if user is None:
-        request.session["error_message"] = "Пользователь с таким именем или адресом кошелька уже существует."
+        request.session["error_message"] = "Пользователь с таким именем уже существует."
         return RedirectResponse(url="/register", status_code=status.HTTP_302_FOUND)
 
     return RedirectResponse(url="/login", status_code=status.HTTP_201_CREATED)
