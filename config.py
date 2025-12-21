@@ -47,5 +47,8 @@ class Settings(BaseSettings):
 
     BCRYPT_COST: int = 12
     ROOT_URL: str = 'http://localhost:8000'
+    PRIVATE_KEY: str = None
+    PUBLIC_KEY: str = None
+    ADDRESS: str = None
 # 💡 Использование в приложении
 settings = Settings()

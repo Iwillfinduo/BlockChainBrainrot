@@ -1,46 +1,55 @@
 from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, create_engine, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column, Mapped
+from core.api_core import BlockHeader
 
 Base = declarative_base()
 
 
-class BlockDB(Base):
-    """Модель для хранения блоков"""
-    __tablename__ = 'blocks'
-
-    id = Column(Integer, primary_key=True)
-    index = Column(Integer, nullable=False, index=True)
-    hash = Column(String(64), nullable=False, unique=True, index=True)
-    previous_hash = Column(String(64), nullable=False, index=True)
-    merkle_root = Column(String(64), nullable=False)
-    timestamp = Column(Float, nullable=False)
-    nonce = Column(Integer, nullable=False)
-    difficulty = Column(Integer, nullable=False)
-    transactions_data = Column(Text, nullable=False)  # JSON строка с транзакциями
-
-    # Связь с транзакциями
-    transactions = relationship("TransactionDB", back_populates="block", cascade="all, delete-orphan")
-
-
 class TransactionDB(Base):
-    """Модель для хранения транзакций (для быстрого поиска)"""
-    __tablename__ = 'transactions'
+    __tablename__ = "transactions"
 
-    id = Column(Integer, primary_key=True)
-    tx_hash = Column(String(64), nullable=False, unique=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    # Внешний ключ на блок
-    block_id = Column(Integer, ForeignKey('blocks.id'), nullable=False, index=True)
-    block_hash = Column(String(64), nullable=False, index=True)
+    block_id: Mapped[int] = mapped_column(ForeignKey("blocks.id"))
 
-    sender = Column(String(255), nullable=False, index=True)
-    receiver = Column(String(255), nullable=False, index=True)
-    amount = Column(Integer, nullable=False)
-    timestamp = Column(Float, nullable=False)
+    sender: Mapped[str] = mapped_column(String)
+    receiver: Mapped[str] = mapped_column(String)
+    amount: Mapped[float] = mapped_column(Float)
+    timestamp: Mapped[float] = mapped_column(Float)
 
-    # Связь с блоком
-    block = relationship("BlockDB", back_populates="transactions")
+    block: Mapped["BlockDB"] = relationship("BlockDB", back_populates="transactions")
+
+
+class BlockDB(Base):
+    __tablename__ = "blocks"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    index: Mapped[int] = mapped_column()
+
+    previous_hash: Mapped[str] = mapped_column(String)
+    merkle_root: Mapped[str] = mapped_column(String)
+    timestamp: Mapped[float] = mapped_column(Float)
+    nonce: Mapped[int] = mapped_column(Integer)
+    difficulty: Mapped[int] = mapped_column(Integer)
+
+    hash: Mapped[str] = mapped_column(String, unique=True)
+
+    transactions: Mapped[list["TransactionDB"]] = relationship(
+        "TransactionDB",
+        back_populates="block",
+        cascade="all, delete-orphan"
+    )
+
+    @property
+    def header(self) -> "BlockHeader":
+        return BlockHeader(
+            previous_hash=self.previous_hash,
+            merkle_root=self.merkle_root,
+            timestamp=self.timestamp,
+            nonce=self.nonce,
+            difficulty=self.difficulty,
+        )
 
 
 class UserDB(Base):
@@ -49,9 +58,7 @@ class UserDB(Base):
 
     id = Column(Integer, primary_key=True)
 
-    # Аутентификационные данные
     username = Column(String(50), nullable=False, unique=True, index=True)
-    # Используйте LargeBinary для хранения хэша пароля (например, bcrypt)
     hashed_password = Column(LargeBinary, nullable=False)
 
     private_key = Column(LargeBinary, nullable=False)
@@ -60,7 +67,6 @@ class UserDB(Base):
 
     address = Column(String(255), nullable=False)
 
-    # Добавление баланса (для быстрого чтения, хотя истинный баланс вычисляется по цепи)
     balance = Column(Float, default=0.0)
 
     def __repr__(self):
