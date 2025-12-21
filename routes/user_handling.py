@@ -113,7 +113,14 @@ async def login_post(
         request.session["error_message"] = "Неверное имя пользователя или пароль."
 
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    balance = None
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f'{settings.ROOT_URL}/balance/{user.address}') as response:
+            # Важно: нужно дождаться чтения тела ответа (await)
+            result = await response.json()
+            balance = result["balance"]
 
+    storage.update_user_balance(user.id, balance)
     # Успешная аутентификация
     request.session["user_id"] = user.id
     request.session["username"] = user.username

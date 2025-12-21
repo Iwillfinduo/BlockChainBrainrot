@@ -46,6 +46,6 @@ class Settings(BaseSettings):
         return f"{self.DB_DIALECT}:///./{self.DB_FILE_NAME}"
 
     BCRYPT_COST: int = 12
-    ROOT_URL = 'localhost:88888'
+    ROOT_URL: str = 'http://localhost:8000'
 # 💡 Использование в приложении
 settings = Settings()

@@ -1,13 +1,13 @@
 import json
-from sqlalchemy import create_engine, desc
-from sqlalchemy.orm import sessionmaker, joinedload
-from sqlalchemy.exc import IntegrityError
 from typing import List, Optional, Dict, Any
 
-from db.model import Base, BlockDB, TransactionDB, UserDB
-from core.node_core import Block, Transaction, BlockHeader
+from sqlalchemy import create_engine, desc
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import sessionmaker, joinedload
 
-from db.utils import verify_password, hash_password
+from core.node_core import Block, Transaction
+from db.model import Base, BlockDB, TransactionDB, UserDB
+from db.utils import verify_password, hash_password, generate_keys, get_address_from_public_key
 
 
 class BlockchainStorage:
@@ -289,10 +289,13 @@ class BlockchainStorage:
         """Создает нового пользователя"""
         try:
             hashed_password = hash_password(password)
-
+            private_key, public_key = generate_keys()
             user_db = UserDB(
                 username=username,
                 hashed_password=hashed_password,
+                private_key=private_key.encode('utf-8'),
+                public_key=public_key.encode('utf-8'),
+                address=get_address_from_public_key(public_key),
                 balance=0.0  # Начальный баланс
             )
             self.session.add(user_db)
@@ -348,5 +351,3 @@ class BlockchainStorage:
             return user
         else:
             return None
-
-

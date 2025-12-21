@@ -18,4 +18,3 @@ def create_transaction(sender, recipient, amount) -> Transaction:
     transaction = Transaction(sender, recipient, amount, timestamp=time.time())
     return transaction
 
-

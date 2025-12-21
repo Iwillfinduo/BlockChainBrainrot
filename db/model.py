@@ -54,8 +54,11 @@ class UserDB(Base):
     # Используйте LargeBinary для хранения хэша пароля (например, bcrypt)
     hashed_password = Column(LargeBinary, nullable=False)
 
-    # Данные кошелька
-    # Предполагается одна валюта, один адрес
+    private_key = Column(LargeBinary, nullable=False)
+
+    public_key = Column(LargeBinary, nullable=False)
+
+    address = Column(String(255), nullable=False)
 
     # Добавление баланса (для быстрого чтения, хотя истинный баланс вычисляется по цепи)
     balance = Column(Float, default=0.0)
