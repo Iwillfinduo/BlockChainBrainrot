@@ -1,7 +1,7 @@
 import json
 from typing import List, Optional, Dict, Any
 
-from sqlalchemy import create_engine, desc
+from sqlalchemy import create_engine, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker, joinedload
 
@@ -351,3 +351,29 @@ class BlockchainStorage:
             return user
         else:
             return None
+
+    def get_users_count(self) -> int:
+        """Получить количество пользователей"""
+        return self.session.query(UserDB).count()
+
+    def get_total_balance(self) -> float:
+        """Получить общую сумму всех балансов"""
+        result = self.session.query(func.sum(UserDB.balance)).scalar()
+        return float(result) if result else 0.0
+
+    def get_users_for_cards(self, limit: int = 20) -> List[dict]:
+        """Получить данные для карточек пользователей (только нужные поля)"""
+        users = self.session.query(UserDB) \
+            .order_by(UserDB.balance.desc()) \
+            .limit(limit) \
+            .all()
+
+        return [
+            {
+                "id": user.id,
+                "username": user.username,
+                "balance": user.balance,
+                "address": user.address
+            }
+            for user in users
+        ]

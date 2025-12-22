@@ -3,30 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в систему</title>
+    <title>Вход администрации</title>
 
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
     <style>
         /* Дополнительный CSS для кнопки регистрации в углу */
         .login-container {
             position: relative; /* Обязательно для абсолютного позиционирования кнопки внутри */
-        }
-        .register-link-top {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            text-decoration: none;
-            color: var(--primary-color);
-            font-size: 0.9em;
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s, color 0.2s;
-            border: 1px solid var(--primary-color);
-        }
-        .register-link-top:hover {
-            background-color: var(--primary-color);
-            color: white;
         }
         .logo {
             position: absolute;
@@ -36,31 +19,19 @@
             width: auto; /* Сохранение пропорций */
             z-index: 10; /* Убедитесь, что логотип находится поверх других элементов */
         }
-        .admin-btn-fixed {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
+
     </style>
 </head>
 <body>
      <img src="{{ url_for('static', path='/img/logo.png') }}" alt="Эмблема" class="logo">
     <div class="login-container">
 
-        <a href="./register" class="register-link-top">
-            Регистрация
-        </a>
-        <h1>🔐 Вход в систему</h1>
+        <h1>🔐 Вход администрации 🔐</h1>
         {% if error %}
             <div class="error-message">{{ error }}</div>
         {% endif %}
 
-        <form id="login-form" method="post" action="/login">
-            <div class="form-group">
-                <label for="username">Имя пользователя / Email</label>
-                <input type="text" id="username" name="username" required minlength="4">
-            </div>
+        <form id="login-form" method="post" action="/admin/login">
 
             <div class="form-group">
                 <label for="password">Пароль</label>
@@ -70,10 +41,6 @@
             <button type="submit" class="btn-submit" id="submit-btn">Войти</button>
         </form>
     </div>
-     <a href="./admin" class="register-link-top">
-        Администратор
-    </a>
 
-    <script src="{{ url_for('static', path='/js/login.js') }}"></script>
 </body>
 </html>
