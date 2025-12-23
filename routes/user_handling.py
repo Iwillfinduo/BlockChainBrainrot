@@ -9,7 +9,7 @@ from starlette.templating import Jinja2Templates
 
 from config import settings
 from db.storage import BlockchainStorage
-from routes.utils import require_auth, create_transaction
+from routes.utils import require_auth, form_transaction, get_balance
 
 user_router = APIRouter()
 templates = Jinja2Templates(directory='routes/templates')
@@ -77,7 +77,7 @@ async def transfer(
         request: Request,
         username: Annotated[str, Form()],
         amount: Annotated[str, Form()],
-):
+): #TODO usernames to addresses
     if request.session.get("user_id") is not None:
         user = storage.get_user_by_username(request.session.get("username"))
         recipient = storage.get_user_by_username(username)
@@ -92,10 +92,10 @@ async def transfer(
         if user.balance < amount:
             request.session['error_message'] = "Недостаточно монет на счету"
             return RedirectResponse(url="/wallet", status_code=status.HTTP_302_FOUND)
-        transaction = create_transaction(sender=user.username, recipient=username, amount=amount)
-        payload = {'transaction': transaction}
+        transaction = form_transaction(sender=user.address, recipient=username, amount=amount,
+                                       private_key=user.private_key.hex(),public_key=user.public_key)
         async with aiohttp.ClientSession() as session:
-            async with session.post(settings.ROOT_URL, json=payload) as response:
+            async with session.post(settings.ROOT_URL, json=transaction) as response:
                 # Важно: нужно дождаться чтения тела ответа (await)
                 result = await response.json()
                 return {"status": response.status, "data": result}
@@ -113,12 +113,7 @@ async def login_post(
         request.session["error_message"] = "Неверное имя пользователя или пароль."
 
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    balance = None
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f'{settings.ROOT_URL}/balance/{user.address}') as response:
-            # Важно: нужно дождаться чтения тела ответа (await)
-            result = await response.json()
-            balance = result["balance"]
+    balance = await get_balance(user.address)
 
     storage.update_user_balance(user.id, balance)
     # Успешная аутентификация

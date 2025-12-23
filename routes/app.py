@@ -8,7 +8,7 @@ from starlette.staticfiles import StaticFiles
 from config import settings
 from db.storage import BlockchainStorage
 from routes.user_handling import user_router
-from routes.admin_handling import admin_router
+from routes.admin_handling import admin_router, mining_service
 from routes.network_handling import node_handler
 
 
@@ -19,6 +19,7 @@ async def lifespan(app: FastAPI):
     
     print(settings.model_config.get('env_file'))
     yield
+    await mining_service.stop()
 
 
 app = FastAPI(lifespan=lifespan)

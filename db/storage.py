@@ -360,7 +360,9 @@ class BlockchainStorage:
         """Получить общую сумму всех балансов"""
         result = self.session.query(func.sum(UserDB.balance)).scalar()
         return float(result) if result else 0.0
-
+    def get_all_users(self):
+        users = self.session.query(UserDB).all()
+        return users
     def get_users_for_cards(self, limit: int = 20) -> List[dict]:
         """Получить данные для карточек пользователей (только нужные поля)"""
         users = self.session.query(UserDB) \

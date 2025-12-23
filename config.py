@@ -50,5 +50,7 @@ class Settings(BaseSettings):
     PRIVATE_KEY: str = None
     PUBLIC_KEY: str = None
     ADDRESS: str = None
+    ADMIN_PASSWORD: str = None
+    MINING_INTERVAL: int = 300
 # 💡 Использование в приложении
 settings = Settings()
