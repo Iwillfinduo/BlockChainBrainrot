@@ -12,6 +12,7 @@ from config import settings
 from core.node_core import Transaction
 from core.logging import logger
 
+
 def require_auth(request: Request):
     user_id = request.session.get("user_id")
     if not user_id:
@@ -47,7 +48,7 @@ def sign_transaction(private_key_hex: str, transaction_data: dict) -> str:
 
 def form_transaction(sender, recipient, amount, private_key, public_key) -> dict:
     transaction = Transaction(sender, recipient, amount, timestamp=time.time())
-    signature = sign_transaction(private_key.hex(), transaction.to_dict())
+    signature = sign_transaction(private_key, transaction.to_dict())
     out = {'transaction': transaction.to_dict(), 'signature': signature, 'public_key': public_key}
     return out
 
@@ -60,6 +61,15 @@ async def get_balance(address) -> float:
         result = response.json()
         balance = result["balance"]
     return balance
+
+async def update_balances(storage) -> None:
+    users = storage.get_all_users()
+    for user in users:
+        address = user.address
+        balance = await get_balance(address)
+        storage.update_user_balance(user.id, balance)
+
+
 
 class MiningService:
     def __init__(self, base_url, interval:int):
@@ -98,7 +108,7 @@ class MiningService:
                     response = await client.get("/transactions/pending")
 
                     if response.status_code == 200:
-                        transactions = response.json()
+                        transactions = response.json().get("transactions")
 
                         # 2. Если список не пуст, запускаем майнинг
                         if transactions:
@@ -109,6 +119,44 @@ class MiningService:
                             logger.debug("No pending transactions.")
                     else:
                         logger.error(f"Error fetching transactions: {response.status_code}")
+
+                except Exception as e:
+                    logger.error(f"Error in mining loop: {e}")
+
+                # Пауза перед следующим циклом
+                await asyncio.sleep(self.check_interval)
+
+class PoolService:
+    def __init__(self, base_url, interval:int):
+        self.is_running = False
+        self.base_url = base_url
+        self.check_interval = interval
+
+    async def start(self, storage):
+        """Запускает цикл, если он еще не запущен."""
+        if not self.is_running:
+            self.is_running = True
+            # Создаем задачу, которая не блокирует основной поток
+            self._task = asyncio.create_task(self._pool_loop(storage))
+            logger.info("PoolService started.")
+
+    async def stop(self):
+        """Останавливает цикл майнинга."""
+        if self.is_running:
+            self.is_running = False
+            if self._task:
+                self._task.cancel()
+                try:
+                    await self._task
+                except asyncio.CancelledError:
+                    pass
+            logger.info("PoolService stopped.")
+
+    async def _pool_loop(self, storage):
+        async with httpx.AsyncClient(base_url=self.base_url) as client:
+            while self.is_running:
+                try:
+                    await update_balances(storage)
 
                 except Exception as e:
                     logger.error(f"Error in mining loop: {e}")

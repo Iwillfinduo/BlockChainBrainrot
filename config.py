@@ -52,5 +52,6 @@ class Settings(BaseSettings):
     ADDRESS: str = None
     ADMIN_PASSWORD: str = None
     MINING_INTERVAL: int = 300
+    POOL_INTERVAL: int = 300
 # 💡 Использование в приложении
 settings = Settings()

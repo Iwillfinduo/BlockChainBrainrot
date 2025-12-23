@@ -1,3 +1,5 @@
+import json
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 import aiohttp
@@ -11,10 +13,15 @@ from config import settings
 from db.storage import BlockchainStorage
 from routes.utils import require_auth, form_transaction, get_balance
 
-user_router = APIRouter()
+
 templates = Jinja2Templates(directory='routes/templates')
 storage = BlockchainStorage(settings.DATABASE_URL)
+@asynccontextmanager
+async def lifespan(router: APIRouter):
+    yield
+    storage.close()
 
+user_router = APIRouter(lifespan=lifespan)
 @user_router.get("/login")
 async def login_form(request: Request):
     error_message = request.session.pop("error_message", None)
@@ -33,7 +40,7 @@ async def profile(request: Request):
         RedirectResponse(url="/login")
     return templates.TemplateResponse(
         "wallet.html",
-        {'request': request, 'username': username, 'balance_amount': user.balance}
+        {'request': request, 'username': username, 'balance_amount': user.balance, 'wallet_address': user.address}
     )
 
 @user_router.get("/register")
@@ -72,15 +79,16 @@ async def route_root(request: Request):
 async def logout(request: Request):
     request.session.clear()
     return 200
-@user_router.post('/transfer')
+@user_router.post('/send_transaction')
 async def transfer(
         request: Request,
-        username: Annotated[str, Form()],
+        address: Annotated[str, Form()],
         amount: Annotated[str, Form()],
 ): #TODO usernames to addresses
     if request.session.get("user_id") is not None:
         user = storage.get_user_by_username(request.session.get("username"))
-        recipient = storage.get_user_by_username(username)
+        recipient = storage.get_user_by_address(address)
+        amount = float(amount)
         if recipient is None:
             request.session["error_message"] = "Пользователь с таким именем не найден"
             return RedirectResponse(url="/wallet", status_code=status.HTTP_302_FOUND)
@@ -92,10 +100,10 @@ async def transfer(
         if user.balance < amount:
             request.session['error_message'] = "Недостаточно монет на счету"
             return RedirectResponse(url="/wallet", status_code=status.HTTP_302_FOUND)
-        transaction = form_transaction(sender=user.address, recipient=username, amount=amount,
-                                       private_key=user.private_key.hex(),public_key=user.public_key)
+        transaction = form_transaction(sender=user.address, recipient=address, amount=amount,
+                                       private_key=user.private_key,public_key=user.public_key)
         async with aiohttp.ClientSession() as session:
-            async with session.post(settings.ROOT_URL, json=transaction) as response:
+            async with session.post(f'{settings.ROOT_URL}/transactions', json=transaction) as response:
                 # Важно: нужно дождаться чтения тела ответа (await)
                 result = await response.json()
                 return {"status": response.status, "data": result}

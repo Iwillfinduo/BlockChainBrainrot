@@ -272,7 +272,7 @@
 
             if (confirm("Вы уверены, что хотите выйти?")) {
                 try {
-                    const response = await fetch('/logout', {
+                    const response = await fetch('/admin/logout', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
                     });

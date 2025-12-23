@@ -61,9 +61,9 @@ class UserDB(Base):
     username = Column(String(50), nullable=False, unique=True, index=True)
     hashed_password = Column(LargeBinary, nullable=False)
 
-    private_key = Column(LargeBinary, nullable=False)
+    private_key = Column(String(255), nullable=False)
 
-    public_key = Column(LargeBinary, nullable=False)
+    public_key = Column(String(255), nullable=False)
 
     address = Column(String(255), nullable=False)
 
