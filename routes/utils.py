@@ -3,7 +3,6 @@ import hashlib
 import json
 import time
 
-import aiohttp
 import httpx
 from ecdsa import SigningKey, SECP256k1
 from fastapi import Request, HTTPException, status
@@ -14,6 +13,13 @@ from core.logging import logger
 
 
 def require_auth(request: Request):
+    """
+    Проверяет аутентификацию пользователя по сессии.
+        Returns:
+            ID пользователя из сессии при успешной проверке.
+        Raises:
+            код 303 и редирект на /login если пользователь не аутентифицирован.
+    """
     user_id = request.session.get("user_id")
     if not user_id:
         # Если сессии нет, перенаправляем на страницу входа
@@ -27,8 +33,12 @@ def require_auth(request: Request):
 
 def sign_transaction(private_key_hex: str, transaction_data: dict) -> str:
     """
-    Подписывает транзакцию приватным ключом.
-    Возвращает подпись в формате hex.
+    Подписывает транзакцию приватным ключом с использованием ECDSA.
+        Args:
+            private_key_hex: Приватный ключ в hex-формате (64 символа).
+            transaction_data: Словарь с данными транзакции для подписи.
+        Returns:
+            Цифровая подпись в формате hex строки.
     """
     private_key = SigningKey.from_string(bytes.fromhex(private_key_hex), curve=SECP256k1)
 
@@ -45,15 +55,31 @@ def sign_transaction(private_key_hex: str, transaction_data: dict) -> str:
     signature = private_key.sign(message_hash)
     return signature.hex()
 
-
 def form_transaction(sender, recipient, amount, private_key, public_key) -> dict:
+    """
+   Формирует структуру подписанной транзакции для отправки в блокчейн.
+       Args:
+           sender: Адрес отправителя.
+           recipient: Адрес получателя.
+           amount: Сумма перевода.
+           private_key: Приватный ключ отправителя для подписи.
+           public_key: Публичный ключ отправителя для верификации.
+       Returns:
+           Словарь с подписанной транзакцией.
+   """
     transaction = Transaction(sender, recipient, amount, timestamp=time.time())
     signature = sign_transaction(private_key, transaction.to_dict())
     out = {'transaction': transaction.to_dict(), 'signature': signature, 'public_key': public_key}
     return out
 
-
 async def get_balance(address) -> float:
+    """
+    Получает баланс кошелька с блокчейн-сервера.
+        Args:
+            address: Адрес кошелька для проверки баланса.
+        Returns:
+            Текущий баланс адреса в виде числа с плавающей точкой.
+    """
     balance = None
     async with httpx.AsyncClient() as session:
         response = await session.get(f'{settings.ROOT_URL}/balance/{address}')
@@ -63,15 +89,21 @@ async def get_balance(address) -> float:
     return balance
 
 async def update_balances(storage) -> None:
+    """
+   Обновляет балансы всех пользователей из блокчейн-сервера.
+       Args:
+           storage: Экземпляр BlockchainStorage для доступа к пользователям.
+   """
     users = storage.get_all_users()
     for user in users:
         address = user.address
         balance = await get_balance(address)
         storage.update_user_balance(user.id, balance)
 
-
-
 class MiningService:
+    """
+        Служба автоматического майнинга блоков.
+    """
     def __init__(self, base_url, interval:int):
         self.is_running = False
         self._task = None
@@ -100,7 +132,10 @@ class MiningService:
             logger.info("Mining service stopped.")
 
     async def _mining_loop(self):
-        """Внутренняя логика цикла."""
+        """
+        Внутренний цикл майнинга.
+        Периодически проверяет наличие транзакций и создает блоки.
+        """
         async with httpx.AsyncClient(base_url=self.base_url) as client:
             while self.is_running:
                 try:
@@ -127,13 +162,17 @@ class MiningService:
                 await asyncio.sleep(self.check_interval)
 
 class PoolService:
+    """
+    Служба поддержания актуальности балансов пользователей.
+    Периодически синхронизирует балансы с блокчейн-сервером.
+    """
     def __init__(self, base_url, interval:int):
         self.is_running = False
         self.base_url = base_url
         self.check_interval = interval
 
     async def start(self, storage):
-        """Запускает цикл, если он еще не запущен."""
+        """Запускает цикл."""
         if not self.is_running:
             self.is_running = True
             # Создаем задачу, которая не блокирует основной поток
@@ -141,7 +180,7 @@ class PoolService:
             logger.info("PoolService started.")
 
     async def stop(self):
-        """Останавливает цикл майнинга."""
+        """Останавливает цикл."""
         if self.is_running:
             self.is_running = False
             if self._task:
@@ -153,6 +192,10 @@ class PoolService:
             logger.info("PoolService stopped.")
 
     async def _pool_loop(self, storage):
+        """
+        Внутренний цикл обновления балансов.
+        Периодически синхронизирует балансы всех пользователей.
+        """
         async with httpx.AsyncClient(base_url=self.base_url) as client:
             while self.is_running:
                 try:
