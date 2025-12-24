@@ -106,24 +106,24 @@
                                         <i class="bi bi-stop-circle me-2"></i>Стоп майнинг
                                     </button>
                                 </div>
+                            </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <div class="dashboard-card {% if stats.mining_status == 'active' %}bg-success text-white{% else %}bg-warning{% endif %} p-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="{% if stats.mining_status != 'active' %}text-muted{% else %}text-white{% endif %} mb-1">⛏️ Статус майнинга</h6>
-                                                <h4 class="mb-0">
-                                                    {% if stats.mining_status == 'active' %}
-                                                    Активен
-                                                    {% else %}
-                                                    Остановлен
-                                                    {% endif %}
-                                                </h4>
-
-                                            </div>
-                                            <div class="stats-icon {% if stats.mining_status == 'active' %}text-white{% else %}text-dark{% endif %} {% if stats.mining_status == 'active' %}mining-active{% endif %}">
-                                                <i class="bi bi-hdd-stack"></i>
-                                            </div>
+                            <!-- Блок статуса майнинга на всю ширину -->
+                            <div class="col-12 mb-3">
+                                <div class="dashboard-card {% if stats.mining_status == 'active' %}bg-success text-white{% else %}bg-warning{% endif %} p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="{% if stats.mining_status != 'active' %}text-muted{% else %}text-white{% endif %} mb-1">⛏️ Статус майнинга</h6>
+                                            <h4 class="mb-0">
+                                                {% if stats.mining_status == 'active' %}
+                                                Активен
+                                                {% else %}
+                                                Остановлен
+                                                {% endif %}
+                                            </h4>
+                                        </div>
+                                        <div class="stats-icon {% if stats.mining_status == 'active' %}text-white{% else %}text-dark{% endif %} {% if stats.mining_status == 'active' %}mining-active{% endif %}">
+                                            <i class="bi bi-hdd-stack"></i>
                                         </div>
                                     </div>
                                 </div>
