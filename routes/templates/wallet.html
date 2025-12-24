@@ -270,17 +270,18 @@
         <span class="close">&times;</span>
         <h2>Перевод средств</h2>
 
-        <form id="transferForm" action="/send_transaction" method="POST">
-
+        <!-- Убрать action и method из формы, так как отправка через JS -->
+        <form id="transferForm">
             <div class="form-group">
                 <label for="address">Адрес:</label>
-                <input type="text" id="address" name="address" class="form-control" placeholder="Введите адрес"
-                       required>
+                <input type="text" id="address" name="address" class="form-control"
+                       placeholder="Введите адрес" required>
             </div>
 
             <div class="form-group">
                 <label for="amount">Сумма:</label>
-                <input type="number" id="amount" name="amount" class="form-control" placeholder="0" min="1" required>
+                <input type="number" id="amount" name="amount" class="form-control"
+                       placeholder="0" min="1" required>
             </div>
 
             <p id="balanceError" class="error-message">Недостаточно средств на счете!</p>
@@ -303,20 +304,24 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const copyBtn = document.getElementById('copyBtn');
     const copySuccess = document.getElementById('copySuccess');
+    const balanceDisplay = document.getElementById('displayBalance');
 
     // Получаем баланс из шаблона Jinja в JS переменную
-    // parseFloat нужен, если баланс может быть дробным, иначе parseInt
-    const currentBalance = parseInt("{{ balance_amount }}");
-
+    let currentBalance = parseInt("{{ balance_amount }}");
     const walletAddress = document.getElementById('walletAddress').innerText;
 
+    // Функция для обновления баланса на странице
+    function updateBalanceDisplay(newBalance) {
+        currentBalance = newBalance;
+        balanceDisplay.innerHTML = `${newBalance} <small style="font-size: 0.6em;">Плюксиков</small>`;
+    }
+
+    // Копирование адреса кошелька
     copyBtn.onclick = function() {
         navigator.clipboard.writeText(walletAddress).then(() => {
-            // Визуальный отклик
             copySuccess.style.display = "block";
             copyBtn.innerText = "Готово! ✅";
 
-            // Возвращаем исходный вид через 2 секунды
             setTimeout(() => {
                 copySuccess.style.display = "none";
                 copyBtn.innerHTML = "Копировать мой адрес 📋";
@@ -325,65 +330,119 @@
             alert("Ошибка при копировании. Проверьте разрешения браузера.");
         });
     };
+
     // Открытие модального окна
-    btn.onclick = function () {
+    btn.onclick = function() {
         modal.style.display = "block";
-        errorMsg.style.display = "none"; // Сброс ошибки при открытии
-        amountInput.value = ""; // Очистка поля суммы
+        errorMsg.style.display = "none";
+        amountInput.value = "";
     }
 
     // Закрытие по крестику
-    span.onclick = function () {
+    span.onclick = function() {
         modal.style.display = "none";
     }
 
     // Закрытие по клику вне окна
-    window.onclick = function (event) {
+    window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
         }
     }
+
+    // Выход из аккаунта
     logoutBtn.onclick = async () => {
-            if (confirm("Вы уверены, что хотите выйти?")) {
-                try {
-                    const response = await fetch('/logout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
+        if (confirm("Вы уверены, что хотите выйти?")) {
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
 
-                    if (response.ok) {
-                        // Перенаправляем на страницу логина после успешного выхода
-                        window.location.href = "/login";
-                    } else {
-                        alert("Ошибка при выходе из системы");
-                    }
-                } catch (err) {
-                    console.error("Logout error:", err);
+                if (response.ok) {
+                    window.location.href = "/login";
+                } else {
+                    alert("Ошибка при выходе из системы");
                 }
+            } catch (err) {
+                console.error("Logout error:", err);
             }
+        }
     };
-    // Логика проверки баланса при отправке
-    form.onsubmit = function (event) {
-        const enteredAmount = parseInt(amountInput.value);
 
+    // Асинхронная отправка формы перевода
+    form.onsubmit = async function(event) {
+        // Отменяем стандартную отправку формы
+        event.preventDefault();
+
+        const enteredAmount = parseInt(amountInput.value);
+        const address = document.getElementById('address').value;
+
+        // Валидация
         if (isNaN(enteredAmount) || enteredAmount <= 0) {
-            event.preventDefault();
             errorMsg.innerText = "Введите корректную сумму";
             errorMsg.style.display = "block";
             return;
         }
 
         if (enteredAmount > currentBalance) {
-            // Отменяем отправку формы
-            event.preventDefault();
-            // Показываем сообщение об ошибке
             errorMsg.innerText = "Недостаточно средств на счете! Доступно: " + currentBalance;
             errorMsg.style.display = "block";
-        } else {
-            // Если все ок, форма отправляется на сервер
-            errorMsg.style.display = "none";
+            return;
         }
-    }
+
+        if (!address || address.trim() === '') {
+            errorMsg.innerText = "Введите адрес получателя";
+            errorMsg.style.display = "block";
+            return;
+        }
+
+        // Скрываем сообщение об ошибке
+        errorMsg.style.display = "none";
+
+        try {
+            // Отправляем данные через Fetch API
+            const response = await fetch('/send_transaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    address: address,
+                    amount: enteredAmount
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Успешный перевод
+                alert(result.message || "Перевод выполнен успешно!");
+
+                // Обновляем баланс на странице
+                if (result.new_balance !== undefined) {
+                    updateBalanceDisplay(result.new_balance);
+                } else {
+                    // Если сервер не вернул новый баланс, вычитаем сумму на клиенте
+                    updateBalanceDisplay(currentBalance - enteredAmount);
+                }
+
+                // Закрываем модальное окно
+                modal.style.display = "none";
+
+                // Очищаем форму
+                form.reset();
+            } else {
+                // Ошибка перевода
+                errorMsg.innerText = result.message || "Ошибка при выполнении перевода";
+                errorMsg.style.display = "block";
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            errorMsg.innerText = "Сетевая ошибка. Попробуйте еще раз.";
+            errorMsg.style.display = "block";
+        }
+    };
 </script>
 </body>
 </html>
