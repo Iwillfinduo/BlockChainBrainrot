@@ -1,8 +1,7 @@
 from contextlib import asynccontextmanager
 
 import aiohttp
-from anyio import sleep
-from fastapi import APIRouter, Request, Depends, Form, HTTPException
+from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import hashlib
@@ -39,11 +38,13 @@ async def admin_login_page(request: Request):
         "admin_login.html",
         {"request": request}
     )
+
 @admin_router.post('/admin/logout')
 async def logout(request: Request):
     await mining_service.stop()
     request.session.clear()
     return 200
+
 @admin_router.post("/admin/login")
 async def admin_login(
     request: Request,
@@ -62,7 +63,6 @@ async def admin_login(
                 "error": "Неверный пароль администратора"
             }
         )
-
 
 @admin_router.get("/admin/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request):
@@ -89,11 +89,9 @@ async def admin_dashboard(request: Request):
         }
     )
 
-
 @admin_router.post("/admin/mining")
 async def start_mining(request: Request):
-    #TODO MAKE WORK
-    """Запуск майнинга и автоматическое распределение средств"""
+    """Запуск майнинга"""
     if not request.session.get("admin_authenticated"):
         raise HTTPException(status_code=403, detail="Not authorized")
     try:
@@ -115,13 +113,13 @@ async def start_mining(request: Request):
 
 @admin_router.post("/admin/distribute")
 async def distribute_coin(request: Request):
+    """Распределение средств среди всех кошельков в узле"""
     if not request.session.get("admin_authenticated"):
         raise HTTPException(status_code=403, detail="Not authorized")
 
-        # 1. Читаем JSON из тела запроса
     try:
         data = await request.json()
-        amount = data.get("amount")  # Теперь здесь будет число
+        amount = data.get("amount")
     except Exception:
         raise HTTPException(status_code=400, detail="Некорректный JSON")
 
@@ -144,10 +142,9 @@ async def distribute_coin(request: Request):
             print(transaction)
             async with aiohttp.ClientSession() as session:
                 async with session.post(f'{settings.ROOT_URL}/transactions', json=transaction) as response:
-                    # Важно: нужно дождаться чтения тела ответа (await)
+                    # нужно дождаться чтения тела ответа (await)
                     result = await response.json()
                     print(result)
-                    #return {"status": response.status, "data": result}
     else:
         raise HTTPException(status_code=400, detail="Не достаточно средств")
     return RedirectResponse(url="/admin/dashboard", status_code=302)

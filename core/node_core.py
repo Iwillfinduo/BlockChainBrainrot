@@ -2,9 +2,6 @@ import hashlib
 import time
 import json
 
-#from core.utills import create_genesis_block
-
-
 class Transaction:
     """
     Класс, представляющий отдельную транзакцию в блокчейне.
@@ -177,34 +174,3 @@ class Block:
         block.hash = data["hash"]
 
         return block
-
-
-
-    # class Blockchain:
-    #     def __init__(self, dao):
-    #         self.chain = []
-    #         self.current_transactions = []
-    #         self.dao = dao
-    #
-    #         self.new_block(create_genesis_block())
-    #
-    #     def new_block(self, block):
-    #         # Создает новый блок и вносит его в цепь
-    #         self.current_transactions = []
-    #         self.dao.add_block(block.to_orm(), [transaction.to_orm() for transaction in block.transactions])
-    #         self.chain.append(block)
-    #         return block
-    #
-    #     def new_transaction(self, transaction: Transaction):
-    #         # Вносит новую транзакцию в список транзакций
-    #         self.current_transactions.append(transaction)
-    #         return self.last_block.index + 1
-    #
-    #     @property
-    #     def last_block(self):
-    #         # Возвращает последний блок в цепочке
-    #         return self.chain[-1]
-
-
-
-

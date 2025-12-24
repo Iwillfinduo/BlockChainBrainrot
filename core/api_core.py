@@ -1,15 +1,10 @@
 from __future__ import annotations
-
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 from pydantic import BaseModel
 
 import core.node_core as core_models
 import db.model as db_models
-
-if TYPE_CHECKING:
-    pass  # core_models is now imported above
-
 
 class Transaction(BaseModel):
     sender: str
@@ -18,14 +13,6 @@ class Transaction(BaseModel):
     timestamp: float
     block_id: Union[int, None] = None
 
-
-class SignedTransaction(BaseModel):
-    """Обёртка: транзакция + данные для валидации."""
-    transaction: Transaction
-    signature: str
-    public_key: Union[str, None] = None
-
-
 class BlockHeader(BaseModel):
     previous_hash: str
     merkle_root: str
@@ -33,7 +20,6 @@ class BlockHeader(BaseModel):
     nonce: int
     difficulty: int
     hash: str
-
 
 class Block(BaseModel):
     index: int

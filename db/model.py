@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, create_engine, LargeBinary
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from core.api_core import BlockHeader
@@ -7,6 +7,7 @@ Base = declarative_base()
 
 
 class TransactionDB(Base):
+    """Модель для хранения транзакций"""
     __tablename__ = "transactions"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -22,6 +23,7 @@ class TransactionDB(Base):
 
 
 class BlockDB(Base):
+    """Модель для хранения блоков"""
     __tablename__ = "blocks"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

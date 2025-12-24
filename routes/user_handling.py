@@ -82,7 +82,7 @@ async def logout(request: Request):
 @user_router.post('/send_transaction')
 async def transfer(
         request: Request
-): #TODO usernames to addresses
+):
     if request.session.get("user_id") is not None:
         data = await request.json()
         address = data.get("address")
