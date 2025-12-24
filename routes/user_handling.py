@@ -5,7 +5,7 @@ from typing import Annotated
 import aiohttp
 from fastapi import APIRouter, Request, Form, status
 
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 from starlette.templating import Jinja2Templates
 
 
@@ -81,11 +81,12 @@ async def logout(request: Request):
     return 200
 @user_router.post('/send_transaction')
 async def transfer(
-        request: Request,
-        address: Annotated[str, Form()],
-        amount: Annotated[str, Form()],
-): #TODO usernames to addresses
+        request: Request
+):
     if request.session.get("user_id") is not None:
+        data = await request.json()
+        address = data.get("address")
+        amount = data.get("amount")
         user = storage.get_user_by_username(request.session.get("username"))
         recipient = storage.get_user_by_address(address)
         amount = float(amount)
@@ -106,7 +107,13 @@ async def transfer(
             async with session.post(f'{settings.ROOT_URL}/transactions', json=transaction) as response:
                 # Важно: нужно дождаться чтения тела ответа (await)
                 result = await response.json()
-                return {"status": response.status, "data": result}
+                return JSONResponse(
+                            status_code=200,
+                            content={
+                                "success": True,
+                                "message": f"Перевод на сумму {amount} Плюксиков успешно выполнен"
+                                    }
+                )
 
 
 @user_router.post("/login")
