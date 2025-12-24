@@ -196,6 +196,34 @@
             margin-bottom: 15px;
             display: none; /* Скрыто по умолчанию */
         }
+        .address-container {
+            margin-bottom: 20px;
+        }
+
+        .btn-copy-main {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            font-size: 0.9em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-copy-main:hover {
+            background-color: var(--border-color);
+            border-color: var(--primary-color);
+        }
+
+        .copy-success {
+            font-size: 0.85em;
+            color: var(--success-color);
+            display: none; /* Скрыто по умолчанию */
+            margin-top: 8px;
+            font-weight: 500;
+        }
 
     </style>
 
@@ -222,7 +250,15 @@
             {{ balance_amount }} <small style="font-size: 0.6em;">Плюксиков</small>
         </p>
     </div>
+    <div class="address-container">
+        <span id="walletAddress" style="display: none;">{{ wallet_address }}</span>
 
+        <button class="btn-copy-main" id="copyBtn">
+            Копировать мой адрес 📋
+        </button>
+
+        <p id="copySuccess" class="copy-success">Адрес скопирован в буфер!</p>
+    </div>
     <button class="btn-transfer" id="openTransferModal">
         Перевод
     </button>
@@ -237,8 +273,8 @@
         <form id="transferForm" action="/send_transaction" method="POST">
 
             <div class="form-group">
-                <label for="recipient">Кому (Логин):</label>
-                <input type="text" id="recipient" name="recipient" class="form-control" placeholder="Введите логин"
+                <label for="address">Адрес:</label>
+                <input type="text" id="address" name="address" class="form-control" placeholder="Введите адрес"
                        required>
             </div>
 
@@ -265,11 +301,30 @@
     const amountInput = document.getElementById("amount");
     const errorMsg = document.getElementById("balanceError");
     const logoutBtn = document.getElementById('logoutBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const copySuccess = document.getElementById('copySuccess');
 
     // Получаем баланс из шаблона Jinja в JS переменную
     // parseFloat нужен, если баланс может быть дробным, иначе parseInt
     const currentBalance = parseInt("{{ balance_amount }}");
 
+    const walletAddress = document.getElementById('walletAddress').innerText;
+
+    copyBtn.onclick = function() {
+        navigator.clipboard.writeText(walletAddress).then(() => {
+            // Визуальный отклик
+            copySuccess.style.display = "block";
+            copyBtn.innerText = "Готово! ✅";
+
+            // Возвращаем исходный вид через 2 секунды
+            setTimeout(() => {
+                copySuccess.style.display = "none";
+                copyBtn.innerHTML = "Копировать мой адрес 📋";
+            }, 2000);
+        }).catch(err => {
+            alert("Ошибка при копировании. Проверьте разрешения браузера.");
+        });
+    };
     // Открытие модального окна
     btn.onclick = function () {
         modal.style.display = "block";
